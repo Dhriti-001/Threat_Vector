@@ -15,7 +15,7 @@ from flask import Flask, render_template, request, redirect, url_for, g, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db import get_db, close_db, init_db, ensure_tables
-from ml_engine.risk_scorer import calculate_user_risk_profile
+from risk_scorer import calculate_user_risk_profile
 from ml_engine.explainability import generate_explainable_feedback
 
 app = Flask(__name__)
