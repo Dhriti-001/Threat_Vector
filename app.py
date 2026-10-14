@@ -14,7 +14,7 @@ if BASE_DIR not in sys.path:
 from flask import Flask, render_template, request, redirect, url_for, g, jsonify, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from database.db import get_db, close_db, init_db, ensure_tables
+from db import get_db, close_db, init_db, ensure_tables
 from ml_engine.risk_scorer import calculate_user_risk_profile
 from ml_engine.explainability import generate_explainable_feedback
 
