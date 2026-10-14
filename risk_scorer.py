@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from ml_engine.feature_extractor import extract_scenario_features
+from feature_extractor import extract_scenario_features
 
 CATEGORIES = ['URGENCY', 'AUTHORITY', 'FAKELINKS', 'INCENTIVE', 'COERCION']
 
