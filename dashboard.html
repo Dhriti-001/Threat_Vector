@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Main Dashboard | Threat Vector{% endblock %}
+
+{% block content %}
+<!-- HERO SUMMARY WITH DYNAMIC ACTIVE TRAINER -->
+<div class="hero-card">
+    <div>
+        <span class="badge badge-ai" style="margin-bottom: 0.5rem;">Step 2: Command Center</span>
+        <h1 class="hero-title">Adaptive Social Engineering Dashboard</h1>
+        <p class="hero-sub" style="font-size: 1.05rem;">
+            Active Trainer: <strong style="color: var(--brand-blue); font-size: 1.15rem;">{{ session.get('full_name', session.get('username')) }}</strong> 
+            <span style="color: var(--text-muted); font-size: 0.9rem;">(@{{ session.get('username') }})</span>
+        </p>
+        <div class="hero-pills">
+            <a href="{{ url_for('drill') }}" class="btn btn-primary" style="padding: 0.55rem 1.25rem;">
+                ⚡ Start Simulation Drill (Step 3)
+            </a>
+            <button type="button" class="pill-tag btn-open-inspector" style="cursor: pointer; color: var(--brand-blue); border-color: var(--brand-blue); background: var(--brand-teal-light); font-weight: 700;">
+                🔍 AI Threat & Link Inspector
+            </button>
+            <a href="#radar-section" class="pill-tag">📊 Risk Radar</a>
+            <a href="#hub-section" class="pill-tag">🎓 Training Hub</a>
+            <a href="#history-section" class="pill-tag">📜 Audit Log</a>
+            <button id="btn-reset-data" class="pill-tag" style="cursor: pointer; color: var(--accent-rose); border-color: var(--accent-rose-border); background: var(--accent-rose-bg);">
+                🔄 Reset History
+            </button>
+        </div>
+    </div>
+    <div>
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem 1.75rem; text-align: center;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Cognitive Vulnerability Status</div>
+            <div id="hero-risk-level" style="font-size: 1.25rem; font-weight: 800; margin-top: 0.35rem; color: var(--brand-navy);">
+                {{ profile.risk_level }}
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">AI Adaptive Loop Active</div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS METRICS GRID -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Composite Risk Score</span>
+            <span class="stat-icon">🛡️</span>
+        </div>
+        <div class="stat-value" id="val-risk-score" style="color: {% if profile.composite_risk_score > 65 %}var(--accent-rose){% elif profile.composite_risk_score > 30 %}var(--accent-amber){% else %}var(--accent-emerald){% endif %};">
+            {{ profile.composite_risk_score }}
+        </div>
+        <div class="stat-sub">Scale: 0 (Vigilant) to 100 (Critical)</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Decision Accuracy</span>
+            <span class="stat-icon">🎯</span>
+        </div>
+        <div class="stat-value" id="val-accuracy">{{ profile.accuracy_pct }}%</div>
+        <div class="stat-sub" id="val-total-tests">Based on {{ profile.total_tests }} completed drills</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Primary Vulnerability Vector</span>
+            <span class="stat-icon">⚠️</span>
+        </div>
+        <div class="stat-value" id="val-weakness" style="font-size: 1.2rem; margin-top: 0.35rem;">
+            {{ profile.primary_weakness }}
+        </div>
+        <div class="stat-sub">Identified via Cognitive Profiler</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Next Recommended Drill</span>
+            <span class="stat-icon">🤖</span>
+        </div>
+        <div style="margin-top: 0.4rem;">
+            <a href="{{ url_for('drill') }}" class="btn btn-secondary btn-sm" style="font-weight: 700; color: var(--brand-blue);">
+                {% if next_scenario_id %}Drill #{{ next_scenario_id }} ➔{% else %}New Dynamic Drill ➔{% endif %}
+            </a>
+        </div>
+        <div class="stat-sub" style="margin-top: 0.5rem; font-size: 0.8rem;">{{ next_rationale }}</div>
+    </div>
+</div>
+
+<!-- RISK RADAR & COGNITIVE ANALYTICS -->
+<section id="radar-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">📊 Cognitive Vulnerability Radar</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Multi-dimensional quantification of {{ session.get('full_name') }}'s susceptibility across psychological attack vectors.</p>
+        </div>
+        <a href="{{ url_for('drill') }}" class="btn btn-primary btn-sm">
+            Launch New Drill ⚡
+        </a>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="radar-wrapper">
+            <canvas id="riskRadarChart"></canvas>
+        </div>
+        <div>
+            <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--brand-navy); margin-bottom: 1rem;">Vector Vulnerability Rates</h3>
+            <div id="vector-progress-bars">
+                <!-- Dynamically rendered -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TRAINING HUB / SCENARIOS CATALOG -->
+<section id="hub-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">🎓 Training Hub & Scenario Catalog</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Select any social engineering scenario to launch Step 3 (Question / Drill Page).</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Scenario Title</th>
+                    <th>Channel</th>
+                    <th>Attack Vector</th>
+                    <th>Type</th>
+                    <th>Difficulty</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in all_scenarios %}
+                <tr>
+                    <td><strong>#{{ s.id }}</strong></td>
+                    <td>{{ s.title }}</td>
+                    <td><span class="badge">{{ s.channel|upper }}</span></td>
+                    <td><span class="badge badge-ai">{{ s.category_code }}</span></td>
+                    <td>
+                        {% if s.is_threat %}
+                        <span class="badge badge-threat">Threat 🚨</span>
+                        {% else %}
+                        <span class="badge badge-safe">Safe 🛡️</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ s.difficulty|capitalize }}</td>
+                    <td>
+                        <a href="{{ url_for('drill', scenario_id=s.id) }}" class="btn btn-secondary btn-sm" style="font-weight: 600;">
+                            Start Drill ➔
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- AUDIT LOG & DECISION HISTORY -->
+<section id="history-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">📜 Audit Log & Verification History</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Past drill evaluations for {{ session.get('full_name') }}. Click any completed drill to view its Explanation Page.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Scenario</th>
+                    <th>Vector</th>
+                    <th>Your Choice</th>
+                    <th>Ground Truth</th>
+                    <th>Result</th>
+                    <th>Reaction Time</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body">
+                {% if attempts %}
+                    {% for a in attempts %}
+                    <tr>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ a.timestamp }}</td>
+                        <td><strong>{{ a.title }}</strong></td>
+                        <td><span class="badge badge-ai">{{ a.category_code }}</span></td>
+                        <td>{{ "Threat" if a.user_choice else "Safe" }}</td>
+                        <td>{{ "Threat" if a.is_threat else "Safe" }}</td>
+                        <td>
+                            {% if a.is_correct %}
+                            <span class="badge badge-safe">Correct ✓</span>
+                            {% else %}
+                            <span class="badge badge-threat">Incorrect ✗</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.1f"|format(a.response_time_sec) }}s</td>
+                        <td>
+                            <a href="{{ url_for('explanation', attempt_id=a.id) }}" class="btn btn-secondary btn-sm" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;">
+                                Explanation 🔍
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                            No drills completed yet. <a href="{{ url_for('drill') }}" style="color: var(--brand-blue); font-weight: 700;">Start your first drill now</a>!
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const INITIAL_PROFILE = {{ profile|tojson }};
+</script>
+{% endblock %}

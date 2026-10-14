@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Threat Vector AI{% endblock %}
+
+{% block content %}
+<!-- HERO SUMMARY -->
+<div class="hero-card">
+    <div>
+        <span class="badge badge-ai" style="margin-bottom: 0.5rem;">AI Cognitive Security Awareness</span>
+        <h1 class="hero-title">Adaptive Social Engineering Threat Sandbox</h1>
+        <p class="hero-sub">
+            Active Trainee: <strong>{{ session.get('full_name', 'Ms. Dhriti Gupta') }}</strong> | Mode: <strong>Adaptive Real-time Evaluation</strong>
+        </p>
+        <div class="hero-pills">
+            <a href="#drill-section" class="pill-tag">⚡ 1. Drill Sandbox</a>
+            <a href="#radar-section" class="pill-tag">📊 2. Risk Radar</a>
+            <a href="#hub-section" class="pill-tag">🎓 3. Training Hub</a>
+            <a href="#history-section" class="pill-tag">📜 4. Audit Log</a>
+            <button id="btn-reset-data" class="pill-tag" style="cursor: pointer; color: var(--accent-rose); border-color: var(--accent-rose-border); background: var(--accent-rose-bg);">
+                🔄 Reset History
+            </button>
+        </div>
+    </div>
+    <div>
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.5rem; text-align: center;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Cognitive Vulnerability Status</div>
+            <div id="hero-risk-level" style="font-size: 1.15rem; font-weight: 800; margin-top: 0.25rem; color: var(--brand-navy);">
+                {{ profile.risk_level }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS METRICS GRID -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Composite Risk Score</span>
+            <span class="stat-icon">🛡️</span>
+        </div>
+        <div class="stat-value" id="val-risk-score" style="color: {% if profile.composite_risk_score > 65 %}var(--accent-rose){% elif profile.composite_risk_score > 30 %}var(--accent-amber){% else %}var(--accent-emerald){% endif %};">
+            {{ profile.composite_risk_score }}
+        </div>
+        <div class="stat-sub">Range: 0 (Vigilant) to 100 (Critical)</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Decision Accuracy</span>
+            <span class="stat-icon">🎯</span>
+        </div>
+        <div class="stat-value" id="val-accuracy">{{ profile.accuracy_pct }}%</div>
+        <div class="stat-sub" id="val-total-tests">Based on {{ profile.total_tests }} completed tests</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">Primary Vulnerability Vector</span>
+            <span class="stat-icon">⚠️</span>
+        </div>
+        <div class="stat-value" id="val-weakness" style="font-size: 1.25rem; margin-top: 0.35rem;">
+            {{ profile.primary_weakness }}
+        </div>
+        <div class="stat-sub">Identified by ML Heuristics</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-label">AI Engine Status</span>
+            <span class="stat-icon">🧠</span>
+        </div>
+        <div class="stat-value" style="font-size: 1.35rem; color: var(--brand-teal);">Online</div>
+        <div class="stat-sub">Scikit-Learn Random Forest active</div>
+    </div>
+</div>
+
+<!-- 1. SIMULATION DRILL SECTION -->
+<section id="drill-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">
+                🎯 Interactive Simulation Drill
+                <span class="badge" id="drill-id-badge">#{{ scenario.id }}</span>
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+                Examine incoming communication carefully and determine if it represents an authentic message or a social engineering attack.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <span class="badge badge-ai" id="drill-channel">{{ scenario.channel|upper }}</span>
+            <span class="badge" id="drill-diff">Difficulty: {{ scenario.difficulty|capitalize }}</span>
+        </div>
+    </div>
+
+    <!-- AI ADAPTIVE RATIONALE -->
+    <div class="ai-rationale-box">
+        <span style="font-size: 1.3rem;">🤖</span>
+        <span id="rationale-text"><strong>AI Recommendation:</strong> {{ adaptive_rationale }}</span>
+    </div>
+
+    <!-- SCENARIO VIEWPORT -->
+    <div id="scenario-viewport" data-scenario-id="{{ scenario.id }}">
+        {% if scenario.channel == 'email' %}
+        <div class="mail-client">
+            <div class="client-window-bar">
+                <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-left: 0.5rem; text-transform: uppercase;">Mail Client — Inbox Preview</span>
+            </div>
+            <div class="mail-header-info">
+                <div class="mail-row"><span class="mail-field">From:</span><span><strong>{{ scenario.sender_name }}</strong> &lt;{{ scenario.sender }}&gt;</span></div>
+                <div class="mail-row"><span class="mail-field">To:</span><span>{{ session.get('username', 'trainee') }}@organization-portal.edu</span></div>
+                <div class="mail-subject">{{ scenario.subject }}</div>
+            </div>
+            <div class="mail-body">{{ scenario.body }}</div>
+        </div>
+        {% elif scenario.channel == 'sms' %}
+        <div class="sms-client">
+            <div class="sms-header">
+                <div style="font-weight: 700; color: var(--brand-navy);">{{ scenario.sender_name }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ scenario.sender }}</div>
+            </div>
+            <div class="sms-bubble">{{ scenario.body }}</div>
+        </div>
+        {% else %}
+        <div class="chat-client">
+            <div class="chat-row">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-content">
+                    <div class="chat-author">{{ scenario.sender_name }} ({{ scenario.sender }})</div>
+                    <div style="font-size: 0.96rem; white-space: pre-line;">{{ scenario.body }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- DECISION ACTION BAR -->
+    <div class="action-bar">
+        <div class="stopwatch">
+            <span>⏱️ Reaction Stopwatch:</span>
+            <span class="stopwatch-time" id="timer-display">0.0s</span>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-safe" class="btn btn-success">🛡️ Mark as Safe (Legitimate)</button>
+            <button id="btn-threat" class="btn btn-danger">🚨 Report Threat (Social Engineering)</button>
+        </div>
+    </div>
+</section>
+
+<!-- 2. EXPLAINABLE AI DIAGNOSTIC CARD (DYNAMIC) -->
+<section id="feedback-section" class="section-panel" style="display: none; scroll-margin-top: 80px;">
+    <div class="panel-header">
+        <h2 class="panel-title">🔍 Explainable AI Diagnostic Feedback</h2>
+        <button id="btn-next-drill" class="btn btn-primary btn-sm">Next Adaptive Drill ⚡</button>
+    </div>
+
+    <div id="fb-banner" class="xai-banner success">
+        <div id="fb-icon" class="xai-icon">🛡️</div>
+        <div>
+            <h3 id="fb-title" class="xai-title">Verdict</h3>
+            <p id="fb-desc">Detailed verdict feedback will render here.</p>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <span class="badge">Your Decision: <strong id="fb-choice" style="margin-left: 4px;">-</strong></span>
+        <span class="badge">Ground Truth: <strong id="fb-truth" style="margin-left: 4px;">-</strong></span>
+        <span class="badge">Reaction Speed: <strong id="fb-time" style="margin-left: 4px;">-</strong></span>
+        <span class="badge badge-ai">ML Threat Probability: <strong id="fb-confidence" style="margin-left: 4px;">-</strong></span>
+    </div>
+
+    <div id="fb-speed-box" class="ai-rationale-box" style="margin-bottom: 1.25rem;">
+        <span>⚡ <strong>Timing Insight:</strong> <span id="fb-speed-text"></span></span>
+    </div>
+
+    <!-- PSYCHOLOGICAL VECTOR BREAKDOWN -->
+    <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h4 id="fb-vector-title" style="font-size: 1.1rem; font-weight: 700; color: var(--brand-navy);">Attack Vector Analysis</h4>
+            <span id="fb-vector-code" class="badge badge-ai">URGENCY</span>
+        </div>
+        <p id="fb-vector-desc" style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.75rem;"></p>
+        <div style="background: #FFFFFF; border-left: 3px solid var(--brand-teal); border: 1px solid var(--border-color); border-left-width: 4px; padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+            <strong style="color: var(--brand-teal);">Defense Protocol:</strong>
+            <span id="fb-vector-defense" style="color: var(--text-primary); font-size: 0.9rem; margin-left: 4px;"></span>
+        </div>
+    </div>
+
+    <!-- RED FLAGS PANEL -->
+    <div id="fb-redflags-box" class="red-flags-panel" style="display: none;">
+        <h4 style="font-size: 1rem; font-weight: 700; color: #991B1B; margin-bottom: 0.5rem;">🚩 Detected Red Flags & Threat Hallmarks:</h4>
+        <div id="fb-redflags-list"></div>
+    </div>
+
+    <!-- EXPLANATION & MICRO LESSON -->
+    <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+        <h4 style="font-size: 1rem; font-weight: 700; color: var(--brand-navy); margin-bottom: 0.4rem;">Deconstruction & Key Takeaway</h4>
+        <p id="fb-explanation" style="font-size: 0.94rem; color: var(--text-secondary); margin-bottom: 0.75rem;"></p>
+        <div style="background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.9rem;">
+            <strong>💡 Micro-Lesson:</strong> <span id="fb-microlesson" style="color: var(--text-secondary);"></span>
+        </div>
+    </div>
+</section>
+
+<!-- 3. RISK RADAR & COGNITIVE ANALYTICS -->
+<section id="radar-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">📊 Cognitive Vulnerability Radar</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Multi-dimensional quantification of individual susceptibility across psychological attack vectors.</p>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+        <div class="radar-wrapper">
+            <canvas id="riskRadarChart"></canvas>
+        </div>
+        <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--brand-navy); margin-bottom: 1rem;">Vector Susceptibility Breakdown</h3>
+            <div id="vector-progress-bars">
+                <!-- Dynamically updated -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. TRAINING HUB / SCENARIOS CATALOG -->
+<section id="hub-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">🎓 Training Hub & Scenario Library</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Browse curated social engineering drills across channels and difficulty levels.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Scenario Title</th>
+                    <th>Channel</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Difficulty</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in all_scenarios %}
+                <tr>
+                    <td><strong>#{{ s.id }}</strong></td>
+                    <td>{{ s.title }}</td>
+                    <td><span class="badge">{{ s.channel|upper }}</span></td>
+                    <td><span class="badge badge-ai">{{ s.category_code }}</span></td>
+                    <td>
+                        {% if s.is_threat %}
+                        <span class="badge badge-threat">Threat 🚨</span>
+                        {% else %}
+                        <span class="badge badge-safe">Safe 🛡️</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ s.difficulty|capitalize }}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm btn-load-scenario" data-id="{{ s.id }}">Practice Drill ⚡</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- 5. AUDIT LOG & DECISION HISTORY -->
+<section id="history-section" class="section-panel">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">📜 Audit Log & Verification History</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Chronological record of evaluation attempts, reaction speeds, and verdicts.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Scenario</th>
+                    <th>Category</th>
+                    <th>Your Choice</th>
+                    <th>Actual Ground Truth</th>
+                    <th>Result</th>
+                    <th>Reaction Time</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body">
+                {% if attempts %}
+                    {% for a in attempts %}
+                    <tr>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{ a.timestamp }}</td>
+                        <td><strong>{{ a.title }}</strong></td>
+                        <td><span class="badge badge-ai">{{ a.category_code }}</span></td>
+                        <td>{{ "Threat" if a.user_choice else "Safe" }}</td>
+                        <td>{{ "Threat" if a.is_threat else "Safe" }}</td>
+                        <td>
+                            {% if a.is_correct %}
+                            <span class="badge badge-safe">Correct ✓</span>
+                            {% else %}
+                            <span class="badge badge-threat">Incorrect ✗</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.1f"|format(a.response_time_sec) }}s</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr id="no-history-row">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                            No drills completed yet. Take your first simulation drill above!
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const INITIAL_PROFILE = {{ profile|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

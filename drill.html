@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Simulation Drill #{{ scenario.id }} | Threat Vector{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <!-- Step Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <span class="badge badge-ai" style="margin-bottom: 0.4rem;">Step 3: Question / Simulation Drill</span>
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--brand-navy);">
+                #{{ scenario.id }} — {{ scenario.title }}
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                Active Trainer: <strong style="color: var(--brand-navy);">{{ session.get('full_name', session.get('username')) }}</strong>
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span class="badge">{{ scenario.channel|upper }}</span>
+            <span class="badge badge-ai">{{ scenario.category_code }}</span>
+            <span class="badge">Difficulty: {{ scenario.difficulty|capitalize }}</span>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">Exit to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- AI Recommendation Rationale -->
+    <div class="ai-rationale-box">
+        <span style="font-size: 1.3rem;">🤖</span>
+        <span><strong>AI Selection Rationale:</strong> {{ adaptive_rationale }}</span>
+    </div>
+
+    <!-- Clean Scenario Viewport -->
+    <div class="section-panel" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+        {% if scenario.channel == 'email' %}
+        <div class="mail-client">
+            <div class="client-window-bar">
+                <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-left: 0.5rem; text-transform: uppercase;">
+                    Mail Client — Inbox Preview
+                </span>
+            </div>
+            <div class="mail-header-info">
+                <div class="mail-row">
+                    <span class="mail-field">From:</span>
+                    <span><strong>{{ scenario.sender_name }}</strong> &lt;{{ scenario.sender }}&gt;</span>
+                </div>
+                <div class="mail-row">
+                    <span class="mail-field">To:</span>
+                    <span>{{ session.get('username', 'trainee') }}@organization-portal.edu</span>
+                </div>
+                <div class="mail-subject">{{ scenario.subject }}</div>
+            </div>
+            <div class="mail-body">{{ scenario.body }}</div>
+        </div>
+        {% elif scenario.channel == 'sms' %}
+        <div class="sms-client">
+            <div class="sms-header">
+                <div style="font-weight: 700; color: var(--brand-navy);">{{ scenario.sender_name }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ scenario.sender }}</div>
+            </div>
+            <div class="sms-bubble">{{ scenario.body }}</div>
+        </div>
+        {% else %}
+        <div class="chat-client">
+            <div class="chat-row">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-content">
+                    <div class="chat-author">{{ scenario.sender_name }} ({{ scenario.sender }})</div>
+                    <div style="font-size: 0.98rem; white-space: pre-line; margin-top: 0.35rem;">{{ scenario.body }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Clean Decision Form submitting to Step 4 -->
+        <form id="drill-form" action="{{ url_for('drill_submit') }}" method="POST">
+            <input type="hidden" name="scenario_id" value="{{ scenario.id }}">
+            <input type="hidden" id="input-response-time" name="response_time" value="0.0">
+            <input type="hidden" id="input-user-choice" name="user_choice" value="safe">
+
+            <div class="action-bar" style="border: none; padding: 1rem 0 0; box-shadow: none;">
+                <div class="stopwatch">
+                    <span>⏱️ Reaction Stopwatch:</span>
+                    <span class="stopwatch-time" id="drill-timer">0.0s</span>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" id="btn-drill-safe" class="btn btn-success" style="padding: 0.75rem 1.75rem; font-size: 1rem;">
+                        🛡️ Mark as Safe (Legitimate)
+                    </button>
+                    <button type="button" id="btn-drill-threat" class="btn btn-danger" style="padding: 0.75rem 1.75rem; font-size: 1rem;">
+                        🚨 Report Threat (Social Engineering)
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let startTime = Date.now();
+    const timerElem = document.getElementById('drill-timer');
+    const inputTime = document.getElementById('input-response-time');
+    const inputChoice = document.getElementById('input-user-choice');
+    const form = document.getElementById('drill-form');
+
+    const timerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        if (timerElem) timerElem.textContent = `${elapsed}s`;
+    }, 100);
+
+    function submitChoice(choice) {
+        clearInterval(timerInterval);
+        const finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        inputTime.value = finalTime;
+        inputChoice.value = choice;
+        form.submit();
+    }
+
+    document.getElementById('btn-drill-safe').addEventListener('click', () => submitChoice('safe'));
+    document.getElementById('btn-drill-threat').addEventListener('click', () => submitChoice('threat'));
+</script>
+{% endblock %}

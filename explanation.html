@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}AI Diagnostic Feedback | Scenario #{{ scenario.id }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <!-- Step Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <span class="badge badge-ai" style="margin-bottom: 0.4rem;">Step 4: AI Diagnostic Explanation</span>
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--brand-navy);">
+                Evaluation Result & Red-Flag Analysis
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                Trainee: <strong>{{ session.get('full_name', session.get('username')) }}</strong> | Scenario #{{ scenario.id }}: {{ scenario.title }}
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('drill') }}" class="btn btn-primary">
+                Next Adaptive Drill ⚡ (Step 3)
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                Back to Dashboard (Step 2)
+            </a>
+        </div>
+    </div>
+
+    <!-- VERDICT BANNER -->
+    <div class="xai-banner {{ feedback.alert_type }}">
+        <div class="xai-icon">
+            {% if feedback.alert_type == 'success' %}🛡️{% elif feedback.alert_type == 'danger' %}🚨{% else %}⚠️{% endif %}
+        </div>
+        <div>
+            <h3 class="xai-title">{{ feedback.verdict }}</h3>
+            <p style="font-size: 1rem;">{{ feedback.verdict_desc }}</p>
+        </div>
+    </div>
+
+    <!-- COMPARISON BADGES -->
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+        <span class="badge">Your Decision: 
+            <strong style="margin-left: 4px;">{{ "Report Threat 🚨" if user_choice else "Mark Safe 🛡️" }}</strong>
+        </span>
+        <span class="badge">Actual Truth: 
+            <strong style="margin-left: 4px;">{{ "Threat (Malicious) 🚨" if scenario.is_threat else "Legitimate Communication 🛡️" }}</strong>
+        </span>
+        <span class="badge">Reaction Speed: 
+            <strong style="margin-left: 4px;">{{ "%.1f"|format(response_time) }}s</strong>
+        </span>
+        <span class="badge badge-ai">ML Threat Probability: 
+            <strong style="margin-left: 4px;">{{ feedback.confidence_score }}%</strong>
+        </span>
+    </div>
+
+    <!-- TIMING INSIGHT -->
+    <div class="ai-rationale-box" style="margin-bottom: 1.5rem;">
+        <span>⚡ <strong>Cognitive Timing Insight:</strong> {{ feedback.speed_insight }}</span>
+    </div>
+
+    <!-- PSYCHOLOGICAL VECTOR DEEP DIVE -->
+    <div class="section-panel" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--brand-navy);">
+                🧠 Cognitive Attack Vector: {{ feedback.attack_vector_info.title }}
+            </h3>
+            <span class="badge badge-ai">{{ scenario.category_code }}</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+            {{ feedback.attack_vector_info.description }}
+        </p>
+        <div style="background: var(--bg-subtle); border-left: 4px solid var(--brand-teal); padding: 0.85rem 1.15rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); border-left-width: 4px;">
+            <strong style="color: var(--brand-teal);">Actionable Defense Protocol:</strong>
+            <span style="color: var(--text-primary); font-size: 0.92rem; margin-left: 4px;">
+                {{ feedback.attack_vector_info.defense }}
+            </span>
+        </div>
+    </div>
+
+    <!-- DETECTED RED FLAGS -->
+    {% if feedback.red_flags %}
+    <div class="red-flags-panel" style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: #991B1B; margin-bottom: 0.6rem;">
+            🚩 Detected Red Flags & Threat Hallmarks in this Drill:
+        </h4>
+        <div>
+            {% for flag in feedback.red_flags %}
+            <div class="red-flag-entry">
+                <span>•</span>
+                <span>{{ flag }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FULL EXPLANATION & MICRO-LESSON -->
+    <div class="section-panel" style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--brand-navy); margin-bottom: 0.5rem;">
+            📖 Detailed AI Explanation & Deconstruction
+        </h3>
+        <p style="font-size: 0.96rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.25rem;">
+            {{ feedback.explanation }}
+        </p>
+        <div style="background: var(--brand-teal-light); border: 1px solid var(--brand-teal-border); border-radius: var(--radius-sm); padding: 1rem 1.25rem;">
+            <strong style="color: var(--brand-navy);">💡 Micro-Lesson & Key Security Takeaway:</strong>
+            <p style="color: var(--brand-navy); font-size: 0.93rem; margin-top: 0.35rem;">
+                {{ feedback.micro_lesson }}
+            </p>
+        </div>
+    </div>
+
+    <!-- BOTTOM ACTION NAVIGATION -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 1.25rem 1.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 2.5rem;">
+        <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Upcoming Next Drill</div>
+            <div style="font-weight: 700; color: var(--brand-navy);">
+                {% if next_scenario_id %}Drill #{{ next_scenario_id }} ({{ next_rationale }}){% else %}Brand-New Procedural AI Drill ({{ next_rationale }}){% endif %}
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                📊 Main Dashboard (Step 2)
+            </a>
+            <a href="{{ url_for('drill') }}" class="btn btn-primary">
+                ⚡ Continue to Next Drill (Step 3)
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

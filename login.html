@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In | Threat Vector{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-header">
+        <div class="brand-icon" style="margin: 0 auto 0.75rem; width: 52px; height: 52px; font-size: 1.75rem;">🛡️</div>
+        <span class="badge badge-ai" style="margin-bottom: 0.5rem;">Step 1: Security Gateway</span>
+        <h2 style="font-size: 1.65rem; color: var(--brand-navy); font-weight: 800;">Trainee Sign In</h2>
+        <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.35rem;">Sign in to access your adaptive cognitive cybersecurity dashboard</p>
+    </div>
+
+    <!-- 1-Click Quick Demo Sign In -->
+    <form action="{{ url_for('demo_login') }}" method="POST" style="margin-bottom: 1.5rem;">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; background: var(--brand-blue);">
+            ⚡ 1-Click Quick Demo Sign In (Ms. Dhriti Gupta)
+        </button>
+    </form>
+
+    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+        <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+        <span style="padding: 0 0.75rem; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">or standard credentials</span>
+        <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+    </div>
+
+    <form action="{{ url_for('login') }}" method="POST">
+        <div class="form-group">
+            <label class="form-label" for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Enter username (e.g. dhriti)" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Enter password (e.g. password123)" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+            Sign In to Dashboard
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.92rem; color: var(--text-secondary);">
+        New user? <a href="{{ url_for('signup') }}" style="color: var(--brand-blue); font-weight: 700; text-decoration: none;">Create a new account here</a>
+    </div>
+</div>
+{% endblock %}

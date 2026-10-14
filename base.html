@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Threat Vector | AI Social Engineering Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% if session.get('user_id') %}{{ url_for('dashboard') }}{% else %}{{ url_for('login') }}{% endif %}" class="nav-brand">
+                <div class="brand-icon">🛡️</div>
+                <div>
+                    <div class="brand-title">Threat Vector</div>
+                    <div class="brand-subtitle">AI Cybersecurity Awareness</div>
+                </div>
+            </a>
+            
+            <ul class="nav-links">
+                {% if session.get('user_id') %}
+                <li><a href="{{ url_for('dashboard') }}" class="nav-link">📊 Main Dashboard</a></li>
+                <li><a href="{{ url_for('drill') }}" class="nav-link">⚡ Start Simulation Drill</a></li>
+                <li><a href="{{ url_for('dashboard') }}#hub-section" class="nav-link">🎓 Training Hub</a></li>
+                <li><a href="{{ url_for('dashboard') }}#history-section" class="nav-link">📜 Audit Log</a></li>
+                <li>
+                    <button type="button" class="btn btn-primary btn-sm btn-open-inspector" id="nav-btn-inspector" style="background: var(--brand-blue); border-color: var(--brand-blue); display: inline-flex; align-items: center; gap: 0.35rem;">
+                        🔍 AI Threat & Link Inspector
+                    </button>
+                </li>
+                <li>
+                    <div class="user-badge" title="Active Logged-in Trainer">
+                        <span class="status-dot"></span>
+                        <span>{{ session.get('full_name', session.get('username')) }}</span>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Sign Out</a></li>
+                {% else %}
+                <li><a href="{{ url_for('login') }}" class="nav-link">Sign In</a></li>
+                <li><a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Create Account</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-wrapper">
+        <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span>🔔</span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- REAL-TIME AI THREAT & LINK INSPECTOR MODAL WITH FILE DROPZONE -->
+    <div id="inspector-modal-backdrop" class="modal-backdrop" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div class="brand-icon" style="width: 34px; height: 34px; font-size: 1.15rem;">🔍</div>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--brand-navy); margin: 0;">AI Threat & Link Inspector</h3>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Real-Time Text, PDF & Screenshot Verification Engine</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-inspector" class="btn-close-modal" aria-label="Close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.65rem;">
+                    Paste suspicious email text, headers, or URLs, and/or upload a suspicious PDF document or screenshot for multi-factor threat scanning:
+                </p>
+
+                <!-- TEXT INPUT AREA -->
+                <div class="form-group" style="margin-bottom: 0.65rem;">
+                    <textarea id="inspector-input" class="form-control" rows="3" placeholder="Paste email content, message body, or link URL here (e.g. 'Account suspended, verify at http://storage-admin.xyz/verify')..."></textarea>
+                </div>
+
+                <!-- FILE DROPZONE / UPLOAD INPUT -->
+                <div class="file-dropzone" id="inspector-dropzone">
+                    <input type="file" id="inspector-file-input" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                    <div id="dropzone-prompt">
+                        <span style="font-size: 1.4rem;">📎</span>
+                        <div style="font-size: 0.88rem; font-weight: 700; color: var(--brand-navy); margin-top: 0.2rem;">
+                            Upload Suspicious PDF or Screenshot
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">
+                            Click to browse or drag & drop files (.pdf, .png, .jpg, .jpeg)
+                        </div>
+                    </div>
+                    <div id="dropzone-file-selected" style="display: none; align-items: center; justify-content: center; gap: 0.6rem;">
+                        <span style="font-size: 1.25rem;">📄</span>
+                        <div style="text-align: left;">
+                            <div id="selected-file-name" style="font-size: 0.88rem; font-weight: 700; color: var(--brand-navy);"></div>
+                            <div id="selected-file-size" style="font-size: 0.78rem; color: var(--text-muted);"></div>
+                        </div>
+                        <button type="button" id="btn-remove-file" class="btn-remove-file-badge" title="Remove attachment">&times;</button>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.4rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-inspect-sample-threat" style="font-size: 0.78rem; padding: 0.25rem 0.6rem;">Load Sample Threat 🚨</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-inspect-sample-safe" style="font-size: 0.78rem; padding: 0.25rem 0.6rem;">Load Sample Safe 🛡️</button>
+                    </div>
+                    <button type="button" id="btn-run-inspect" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.92rem; background: var(--brand-blue);">
+                        ⚡ Analyze Threat
+                    </button>
+                </div>
+
+                <!-- LOADING SPINNER -->
+                <div id="inspector-loading" style="display: none; text-align: center; padding: 1.5rem 0;">
+                    <div class="spinner-dot"></div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.5rem;">Scanning keywords, file structures, and embedded payload signatures...</p>
+                </div>
+
+                <!-- INSPECTOR RESULT CONTAINER -->
+                <div id="inspector-result" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <!-- ATTACHMENT INFO PILL -->
+                    <div id="inspector-file-badge" style="display: none; margin-bottom: 0.75rem; background: #F8FAFC; border: 1px solid var(--border-color); padding: 0.45rem 0.75rem; border-radius: 6px; font-size: 0.84rem; color: var(--brand-navy); align-items: center; gap: 0.5rem;">
+                        <span>📎</span>
+                        <span id="inspector-file-badge-text"></span>
+                    </div>
+
+                    <div id="inspector-status-banner" class="xai-banner" style="margin-bottom: 0.85rem; padding: 0.9rem 1.15rem;">
+                        <div id="inspector-status-icon" style="font-size: 1.8rem;">🛡️</div>
+                        <div>
+                            <h4 id="inspector-status-text" style="font-size: 1.1rem; font-weight: 800; margin: 0;">STATUS</h4>
+                            <span id="inspector-score-badge" class="badge" style="margin-top: 0.25rem; font-size: 0.82rem;">Risk Score: 0%</span>
+                        </div>
+                    </div>
+
+                    <!-- RISK METER BAR -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-secondary);">Calculated Threat Likelihood:</span>
+                            <span id="inspector-score-text" style="color: var(--brand-navy);">0%</span>
+                        </div>
+                        <div style="background: var(--border-color); height: 8px; border-radius: 999px; overflow: hidden;">
+                            <div id="inspector-meter-fill" style="width: 0%; height: 100%; background: var(--accent-emerald); transition: width 0.4s ease;"></div>
+                        </div>
+                    </div>
+
+                    <!-- RED FLAGS DETECTED -->
+                    <div id="inspector-flags-container" style="margin-bottom: 0.85rem;">
+                        <h5 style="font-size: 0.88rem; font-weight: 700; color: #991B1B; margin-bottom: 0.4rem;">🚩 Detected Red-Flag Indicators:</h5>
+                        <div id="inspector-flags-list" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+                    </div>
+
+                    <!-- RECOMMENDATION -->
+                    <div style="background: var(--bg-subtle); border-left: 3px solid var(--brand-teal); border: 1px solid var(--border-color); border-left-width: 4px; padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+                        <strong style="color: var(--brand-teal); font-size: 0.88rem;">Actionable Advice:</strong>
+                        <p id="inspector-recommendation-text" style="color: var(--text-primary); font-size: 0.86rem; margin-top: 0.2rem; line-height: 1.5;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div>
+            <strong>Threat Vector</strong> — AI-Based Adaptive Social Engineering Threat Detection and Awareness System
+        </div>
+        <div style="margin-top: 0.35rem; color: #64748B;">
+            Active User: <strong>{{ session.get('full_name', 'Visitor') }}</strong> | Powered by Python Flask, SQLite & Scikit-Learn
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
